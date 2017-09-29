@@ -52,25 +52,7 @@ var rimraf = require('rimraf')
 // Faye's will not allow a URI-* as the channel name, hash it for Faye
 var md5 = require('md5')
 
-//var app = express()
-
-var host = 'http://localhost' // Format: scheme://hostname
-
-/* Custom ports if specified on command-line */
-var thumbnailServicePort = argv.p ? argv.p : 15421
-var localAssetServerPort = argv.ap ? argv.a : 1338
-var notificationServerPort = argv.ap ? argv.n : 15422
-
-/* Derived host access points */
-var localAssetServer = host + ':' + localAssetServerPort + '/'
-var thumbnailServer = host + ':' + thumbnailServicePort + '/'
-var notificationServer = host + ':' + notificationServerPort + '/'
-
-// Fresh system for testing (NOT IMPLEMENTED)
-var nukeSystemData = argv.clean ? argv.clean : false
 var uriR = ''
-
-var HAMMING_DISTANCE_THRESHOLD = 4
 
 
 
@@ -89,20 +71,6 @@ function main () {
                '*******************************').blue)
 
   console.log("--By Mahee - for understanding")
-  if (nukeSystemData) {
-    var resp = prompt('Delete all derived data (y/N)? ')
-    if (resp === 'y') {
-      console.log('Deleting all dervived data.')
-      nukeSystemData = false
-      // TODO: figure out why the flow does not continue after the
-      //       nukeSystemData conditional
-      cleanSystemData(main)
-      console.log('Derived data deleted.')
-    } else {
-      console.log('No derived data modified.')
-    }
-  }
-
   var endpoint = new CLIEndpoint()
   endpoint.headStart()
 }
@@ -119,16 +87,31 @@ function CLIEndpoint () {
   this.headStart = function () {
 
     var URIMFromCLI = ""
-
+    var pixelsFromCLI= '200'
 
     if (process.argv.length <= 2) {
         console.log('No Argument was passed.. please pass full URI-M')
         return
     }else{
         URIMFromCLI = process.argv[2]
+
+        if(process.argv.length <= 3){
+          console.log("using the default pixel : 200  for the reduced picture size.")
+        }else{
+          if(isNaN(process.argv[3])){
+              console.log("Pixel argument isn't proper, using 200 By Default")
+          }else{
+            if (parseInt(process.argv[3]) <= 0) {
+                console.log("Pixel argument isn't proper, using 200 By Default")
+            }else{
+              pixelsFromCLI= parseInt(process.argv[3])
+            }
+          }
+        }
     }
 
     console.log('URI-M From CLI: ' + URIMFromCLI)
+    console.log('To Reduce the picture to: ' + pixelsFromCLI)
 
     var query = url.parse(URIMFromCLI, true).query
     console.log("--- ByMahee: Query URL from client = "+ JSON.stringify(query))
@@ -145,12 +128,15 @@ function CLIEndpoint () {
       return
     }
 
-  createScreenshotForPassesURIM(URIMFromCLI)
+  createScreenshotForPassesURIM(URIMFromCLI,pixelsFromCLI)
 
-  function createScreenshotForPassesURIM(URIMFromCLI) {
+  function createScreenshotForPassesURIM(URIMFromCLI,pixelsFromCLI) {
       var urim = URIMFromCLI
-      var filename = 'alSum_' + urim.replace(/[^a-z0-9]/gi, '').toLowerCase() + '.png'  // Sanitize URI->filename
+      var reducedPicSize = pixelsFromCLI
+      var timeWhenCaptured = (new Date()).getTime()
+      var filename = 'alSum_' + urim.replace(/[^a-z0-9]/gi, '').toLowerCase() +'_'+ timeWhenCaptured + '.png'  // Sanitize URI->filename
 
+      /* The following is the block of code, which tries to look for a file if exist doesn't dont do a screen shot
       try {
         fs.openSync(
           path.join(__dirname + '/screenshots/' + filename),
@@ -163,7 +149,7 @@ function CLIEndpoint () {
         return
       }catch (e) {
         console.log((new Date()).getTime() + ' ' + filename + ' does not exist...generating')
-      }
+      } */
 
       var options = {
         'phantomConfig': {
@@ -185,17 +171,15 @@ function CLIEndpoint () {
           console.log(err)
         } else {
           fs.chmodSync('./screenshots/' + filename, '755')
-          im.convert(['./screenshots/' + filename, '-thumbnail', '200',
-                './screenshots/' + (filename.replace('.png', '_200.png'))],
+          im.convert(['./screenshots/' + filename, '-thumbnail', reducedPicSize,
+                './screenshots/' + (filename.replace('.png', '_'+reducedPicSize+'.png'))],
             function (err, stdout) {
               if (err) {
                 console.log('We could not downscale ./screenshots/' + filename + ' :(')
               }
-
-              console.log('Successfully scaled ' + filename + ' to 200 pixels', stdout)
+              console.log('Successfully scaled ' + filename + ' to '+reducedPicSize+' pixels', stdout)
             })
-
-          console.log('t=' + (new Date()).getTime() + ' ' + 'Screenshot created for ' + urim)
+            console.log('t=' + timeWhenCaptured + ' ' + 'Screenshot created for ' + urim)
         }
       })
 
