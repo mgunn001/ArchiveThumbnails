@@ -6,7 +6,7 @@
 *  Mat Kelly <mkelly@cs.odu.edu>
 *
 /**************************************
-* Runs with node AlSummarization_CLI_ScreenShot.js URI-R
+* Runs with node AlSummarization_CLI_ScreenShot.js URI-R[optional] PixelSizeToBeReducedTo[optional]
 * using the existing code and tweeking it to the code that captures the screenshot of the URI-R passed and saves it in screenshots folder
 
 * Maheedhar Gunnam <mgunn001@odu.edu>
@@ -53,8 +53,6 @@ var rimraf = require('rimraf')
 var md5 = require('md5')
 
 var uriR = ''
-
-
 
 
 
