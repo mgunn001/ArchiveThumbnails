@@ -466,7 +466,7 @@ Memento.prototype.setSimhash = function () {
     var buffer2 = ''
     var memento = this // Potentially unused? The 'this' reference will be relative to the promise here
     var mOptions = url.parse(thaturi)
-  //  console.log('Starting a simhash: ' + mOptions.host + mOptions.path)
+    console.log('Starting a simhash: ' + mOptions.host + mOptions.path)
     var req = http.request({
       'host': mOptions.host,
       'path': mOptions.path,
@@ -1082,7 +1082,6 @@ TimeMap.prototype.supplyChosenMementosBasedOnInterval = function (callback, skip
 }
 
 
-
 /**
 * Generate a screenshot with all mementos that pass the passed-in criteria test
 * @param callback The next procedure to execution when this process concludes
@@ -1217,8 +1216,8 @@ TimeMap.prototype.calculateHammingDistancesWithOnlineFiltering = function (callb
 
 
   console.log("------------ByMahee-- After the hamming distance is calculated, here is how the mementos with additional details look like ------------------")
-//  console.log(JSON.stringify(this.mementos))
-  console.log(this.mementos)
+  console.log(JSON.stringify(this.mementos))
+  //console.log(this.mementos)
   console.log("----------------------------------------------------------------------------------------------------------------------------------------------")
 
 
